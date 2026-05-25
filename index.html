@@ -1442,8 +1442,8 @@ function applyKnob(name) {
     bgMusic.volume = Math.min(1, pct * pct * 1.2);
   }
   if (name === 'brt') {
-    const el = document.getElementById('crt-screen');
-    if (el) el.style.filter = `brightness(${0.25 + pct * 1.3})`;
+    const brightness = 0.25 + pct * 1.3;
+    cv.style.filter = `brightness(${brightness})`;
   }
 }
 
@@ -1583,10 +1583,7 @@ function draw() {
   }
 }
 
-let _loopCount = 0;
 function loop() {
-  _loopCount++;
-  if (_loopCount <= 5) console.log('loop tick', _loopCount, 'cx:', cx, 'state:', state);
   try {
     if (!paused) update();
     draw();
