@@ -1261,30 +1261,30 @@ function drawMenu() {
   cx.textAlign = 'center';
 
   // Drop shadow
-  cx.fillStyle = '#001133';
+  cx.fillStyle = '#002266';
   cx.font = 'bold 50px "Courier New", monospace';
   cx.fillText('STELLAR', W / 2 + 2, H / 2 - 76 + 2);
-  cx.fillStyle = '#2266cc';
+  cx.fillStyle = '#55aaff';
   cx.fillText('STELLAR', W / 2, H / 2 - 76);
 
-  cx.fillStyle = '#001133';
+  cx.fillStyle = '#002266';
   cx.font = 'bold 38px "Courier New", monospace';
   cx.fillText('MOTH', W / 2 + 2, H / 2 - 30 + 2);
-  cx.fillStyle = '#55aaff';
+  cx.fillStyle = '#aaddff';
   cx.fillText('MOTH', W / 2, H / 2 - 30);
 
-  cx.fillStyle = '#223355';
+  cx.fillStyle = '#7799bb';
   cx.font = '12px "Courier New", monospace';
   cx.fillText('DEFEND THE NEBULA · DESTROY THE SWARM', W / 2, H / 2 + 16);
 
-  cx.fillStyle = '#334466';
+  cx.fillStyle = '#6688aa';
   cx.fillText('ARROWS / WASD  ·  SPACE or Z to fire', W / 2, H / 2 + 40);
 
   const blink = Math.floor(frame / 22) % 2 === 0;
   if (blink) {
-    cx.fillStyle = '#88ccff';
+    cx.fillStyle = '#cceeff';
     cx.font = 'bold 15px "Courier New", monospace';
-    cx.fillText('▶  PRESS SPACE TO START  ◀', W / 2, H / 2 + 74);
+    cx.fillText('▶  PRESS SPACE OR CLICK TO START  ◀', W / 2, H / 2 + 74);
   }
 
   if (best > 0) {
@@ -1585,6 +1585,11 @@ function loop() {
   draw();
   requestAnimationFrame(loop);
 }
+
+cv.addEventListener('click', () => {
+  ensureAudio();
+  if (state === 'menu' || state === 'over') startGame();
+});
 
 loop();
 initBottomButtons();
