@@ -788,7 +788,7 @@ function killEnemy(i) {
   const e = enemies[i];
   score += e.isBoss ? 2000 + wave * 500 : (e.tier + 1) * 100;
   wreckages.push({ x: e.x, y: e.y, tier: e.tier, isBoss: e.isBoss,
-    life: 1, decay: e.isBoss ? 0.007 : 0.013,
+    life: 1, decay: e.isBoss ? 0.005 : 0.009,
     angle: (Math.random() - 0.5) * 0.4, pal: PAL });
   explosions.push({ x: e.x, y: e.y, r: 2, maxR: e.isBoss ? 80 : 35, life: 1 });
   if (e.isBoss) explosions.push({ x: e.x, y: e.y, r: 2, maxR: 55, life: 0.8 });
@@ -1201,7 +1201,7 @@ function drawWreckages() {
     cx.save();
     cx.translate(w.x, w.y);
     cx.rotate(w.angle * age * 3);
-    cx.globalAlpha = Math.min(1, w.life * 1.4);
+    cx.globalAlpha = Math.min(1, w.life * 2);
     if (w.isBoss) drawBossWreck(w, age); else drawEnemyWreck(w, age);
     cx.restore();
     cx.globalAlpha = 1;
@@ -1209,64 +1209,82 @@ function drawWreckages() {
 }
 
 function drawEnemyWreck(w, age) {
-  const t = w.tier, p = w.pal, d = age * 10;
-  cx.strokeStyle = '#ff5500'; cx.lineWidth = 1;
+  const t = w.tier, p = w.pal, d = age * 18;
+  cx.lineWidth = 1.5;
   if (t === 0) {
     // Nose fragment drifts up
     cx.save(); cx.translate(0, -d);
-    cx.fillStyle = p.e[0][t];
+    cx.strokeStyle = '#ff6600';
+    cx.fillStyle = p.e[1][t];
     cx.beginPath(); cx.moveTo(0,-14); cx.lineTo(6,-3); cx.lineTo(-6,-3); cx.closePath(); cx.fill(); cx.stroke();
     cx.restore();
     // Left wing drifts left+down, rotates
-    cx.save(); cx.translate(-d, d*0.4); cx.rotate(-age*0.5);
-    cx.fillStyle = p.e[0][t];
+    cx.save(); cx.translate(-d, d*0.5); cx.rotate(-age*0.6);
+    cx.strokeStyle = '#ff6600';
+    cx.fillStyle = p.e[1][t];
     cx.beginPath(); cx.moveTo(-6,-3); cx.lineTo(-15,4); cx.lineTo(-9,14); cx.lineTo(0,8); cx.closePath(); cx.fill(); cx.stroke();
     cx.restore();
     // Right wing drifts right+down, rotates
-    cx.save(); cx.translate(d, d*0.4); cx.rotate(age*0.5);
-    cx.fillStyle = p.e[0][t];
+    cx.save(); cx.translate(d, d*0.5); cx.rotate(age*0.6);
+    cx.strokeStyle = '#ff6600';
+    cx.fillStyle = p.e[1][t];
     cx.beginPath(); cx.moveTo(6,-3); cx.lineTo(15,4); cx.lineTo(9,14); cx.lineTo(0,8); cx.closePath(); cx.fill(); cx.stroke();
     cx.restore();
-    cx.fillStyle = p.e[1][0];
-    cx.beginPath(); cx.arc(0, 2+d*0.2, 3, 0, 6.28); cx.fill();
+    // Glowing core debris
+    cx.fillStyle = '#ffee44';
+    cx.beginPath(); cx.arc(0, 2+d*0.3, 3, 0, 6.28); cx.fill();
   } else if (t === 1) {
-    // Main hull stays, guns drift out sideways
-    cx.fillStyle = p.e[0][t];
+    // Main hull
+    cx.strokeStyle = '#ff6600';
+    cx.fillStyle = p.e[1][t];
     cx.beginPath(); cx.moveTo(0,-15); cx.lineTo(14,2); cx.lineTo(10,14); cx.lineTo(-10,14); cx.lineTo(-14,2); cx.closePath(); cx.fill(); cx.stroke();
-    cx.save(); cx.translate(-d*1.2, d*0.3); cx.rotate(-age*0.6);
+    // Left gun drifts
+    cx.save(); cx.translate(-d*1.3, d*0.35); cx.rotate(-age*0.7);
+    cx.strokeStyle = '#ff6600';
     cx.fillStyle = p.e[0][t]; cx.fillRect(-23,4,9,6); cx.strokeRect(-23,4,9,6); cx.restore();
-    cx.save(); cx.translate(d*1.2, d*0.3); cx.rotate(age*0.6);
+    // Right gun drifts
+    cx.save(); cx.translate(d*1.3, d*0.35); cx.rotate(age*0.7);
+    cx.strokeStyle = '#ff6600';
     cx.fillStyle = p.e[0][t]; cx.fillRect(14,4,9,6); cx.strokeRect(14,4,9,6); cx.restore();
-    cx.fillStyle = p.e[1][1];
+    cx.fillStyle = '#ffee44';
     cx.beginPath(); cx.ellipse(0, 2, 4, 3, 0, 0, 6.28); cx.fill();
   } else {
-    // Main hull stays, guns drift out wide
-    cx.fillStyle = p.e[0][t];
+    // Main hull
+    cx.strokeStyle = '#ff6600';
+    cx.fillStyle = p.e[1][t];
     cx.beginPath(); cx.moveTo(0,-16); cx.lineTo(18,0); cx.lineTo(12,16); cx.lineTo(-12,16); cx.lineTo(-18,0); cx.closePath(); cx.fill(); cx.stroke();
-    cx.save(); cx.translate(-d*1.3, d*0.4); cx.rotate(-age*0.7);
+    // Left gun drifts
+    cx.save(); cx.translate(-d*1.4, d*0.5); cx.rotate(-age*0.8);
+    cx.strokeStyle = '#ff6600';
     cx.fillStyle = p.e[0][t]; cx.fillRect(-26,3,10,7); cx.strokeRect(-26,3,10,7); cx.restore();
-    cx.save(); cx.translate(d*1.3, d*0.4); cx.rotate(age*0.7);
+    // Right gun drifts
+    cx.save(); cx.translate(d*1.4, d*0.5); cx.rotate(age*0.8);
+    cx.strokeStyle = '#ff6600';
     cx.fillStyle = p.e[0][t]; cx.fillRect(16,3,10,7); cx.strokeRect(16,3,10,7); cx.restore();
-    cx.fillStyle = p.e[1][2];
+    cx.fillStyle = '#ffee44';
     cx.beginPath(); cx.ellipse(0, 2, 5, 5, 0, 0, 6.28); cx.fill();
   }
 }
 
 function drawBossWreck(w, age) {
-  const p = w.pal, d = age * 14;
-  cx.strokeStyle = '#ff5500'; cx.lineWidth = 1.5;
+  const p = w.pal, d = age * 20;
+  cx.lineWidth = 2;
   // Left wing drifts left and rotates
-  cx.save(); cx.translate(-d*1.2, d*0.3); cx.rotate(-age*0.4);
-  cx.fillStyle = p.b[4]; cx.fillRect(-55,8,24,10); cx.strokeRect(-55,8,24,10);
+  cx.save(); cx.translate(-d*1.3, d*0.4); cx.rotate(-age*0.45);
+  cx.strokeStyle = '#ff6600';
+  cx.fillStyle = p.b[5]; cx.fillRect(-55,8,24,10); cx.strokeRect(-55,8,24,10);
   cx.fillStyle = p.b[5]; cx.fillRect(-58,10,6,6); cx.restore();
   // Right wing drifts right and rotates
-  cx.save(); cx.translate(d*1.2, d*0.3); cx.rotate(age*0.4);
-  cx.fillStyle = p.b[4]; cx.fillRect(31,8,24,10); cx.strokeRect(31,8,24,10);
+  cx.save(); cx.translate(d*1.3, d*0.4); cx.rotate(age*0.45);
+  cx.strokeStyle = '#ff6600';
+  cx.fillStyle = p.b[5]; cx.fillRect(31,8,24,10); cx.strokeRect(31,8,24,10);
   cx.fillStyle = p.b[5]; cx.fillRect(52,10,6,6); cx.restore();
-  // Hull sinks and cracks (drawn last so it overlaps wing stumps)
-  cx.save(); cx.translate(0, d*0.3);
-  cx.fillStyle = p.b[0];
+  // Hull sinks (drawn last so it overlaps wing stumps)
+  cx.save(); cx.translate(0, d*0.4);
+  cx.strokeStyle = '#ff6600';
+  cx.fillStyle = p.b[2];
   cx.beginPath(); cx.moveTo(0,-46); cx.lineTo(50,-14); cx.lineTo(54,20); cx.lineTo(26,38); cx.lineTo(-26,38); cx.lineTo(-54,20); cx.lineTo(-50,-14); cx.closePath(); cx.fill(); cx.stroke();
+  // Cracked core eye
   cx.fillStyle = p.b[1]; cx.beginPath(); cx.ellipse(0,-8,22,22,0,0,6.28); cx.fill();
   cx.fillStyle = p.b[2]; cx.beginPath(); cx.ellipse(0,-8,10,10,0,0,6.28); cx.fill();
   cx.restore();
@@ -1512,23 +1530,23 @@ function initKnobs() {
 function draw() {
   drawBg();
   if (state === 'play') {
-    drawWreckages();
-    drawExplosions();
     enemies.forEach(drawEnemy);
+    drawExplosions();
     drawShots();
     drawPowerups();
     drawSparks();
+    drawWreckages();
     drawShip(px, py, pInv > 0);
     drawHUD();
   } else if (state === 'menu') {
     drawMenu();
   } else {
     // game over — keep scene alive
-    drawWreckages();
-    drawExplosions();
     enemies.forEach(drawEnemy);
+    drawExplosions();
     drawShots();
     drawSparks();
+    drawWreckages();
     drawGameOver();
   }
 }
