@@ -531,11 +531,14 @@ function startBgMusic() {
 }
 
 // Try immediately; if blocked, start on first user interaction
-bgMusic.play().catch(() => {
-  const unlock = () => { startBgMusic(); document.removeEventListener('keydown', unlock); document.removeEventListener('click', unlock); };
-  document.addEventListener('keydown', unlock, { once: true });
-  document.addEventListener('click', unlock, { once: true });
-});
+const _autoplay = bgMusic.play();
+if (_autoplay !== undefined) {
+  _autoplay.catch(() => {
+    const unlock = () => { startBgMusic(); document.removeEventListener('keydown', unlock); document.removeEventListener('click', unlock); };
+    document.addEventListener('keydown', unlock, { once: true });
+    document.addEventListener('click', unlock, { once: true });
+  });
+}
 
 // ── INPUT ───────────────────────────────────────────────────────────────────
 const KEY = {};
@@ -897,18 +900,18 @@ function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
 
 // ── DRAWING ───────────────────────────────────────────────────────────────────
 function drawBg() {
-  cx.fillStyle = '#03060e';
+  cx.fillStyle = '#060d1f';
   cx.fillRect(0, 0, W, H);
 
   // Nebula blobs
   const blobs = [
-    { x: W * 0.25, y: H * 0.35, r: 170, g: [0, 20, 80] },
-    { x: W * 0.78, y: H * 0.22, r: 130, g: [40, 0, 90] },
-    { x: W * 0.55, y: H * 0.72, r: 160, g: [0, 30, 70] }
+    { x: W * 0.25, y: H * 0.35, r: 170, g: [0, 30, 120] },
+    { x: W * 0.78, y: H * 0.22, r: 130, g: [60, 0, 130] },
+    { x: W * 0.55, y: H * 0.72, r: 160, g: [0, 50, 110] }
   ];
   blobs.forEach(b => {
     const gr = cx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
-    gr.addColorStop(0, `rgba(${b.g[0]},${b.g[1]},${b.g[2]},0.09)`);
+    gr.addColorStop(0, `rgba(${b.g[0]},${b.g[1]},${b.g[2]},0.18)`);
     gr.addColorStop(1, `rgba(${b.g[0]},${b.g[1]},${b.g[2]},0)`);
     cx.fillStyle = gr;
     cx.beginPath(); cx.arc(b.x, b.y, b.r, 0, 6.28); cx.fill();
@@ -918,8 +921,8 @@ function drawBg() {
   STARS.forEach(s => {
     s.y += s.spd;
     if (s.y > H + 2) { s.y = 0; s.x = Math.random() * W; }
-    cx.globalAlpha = s.a;
-    cx.fillStyle = '#99bbdd';
+    cx.globalAlpha = Math.min(1, s.a * 2);
+    cx.fillStyle = '#bbddff';
     cx.beginPath(); cx.arc(s.x, s.y, s.r, 0, 6.28); cx.fill();
   });
   cx.globalAlpha = 1;
@@ -1581,8 +1584,12 @@ function draw() {
 }
 
 function loop() {
-  if (!paused) update();
-  draw();
+  try {
+    if (!paused) update();
+    draw();
+  } catch(e) {
+    console.error('Game error:', e);
+  }
   requestAnimationFrame(loop);
 }
 
