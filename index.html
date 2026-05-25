@@ -306,7 +306,7 @@
       0 0 30px rgba(20,80,255,0.07),
       0 0 65px rgba(20,80,255,0.03);
   }
-  canvas { display: block; border-radius: 14px; }
+  canvas { display: block; border-radius: 14px; background: #060d1f; }
 
   #crt-scanlines {
     position: absolute; inset: 0;
@@ -1583,7 +1583,10 @@ function draw() {
   }
 }
 
+let _loopCount = 0;
 function loop() {
+  _loopCount++;
+  if (_loopCount <= 5) console.log('loop tick', _loopCount, 'cx:', cx, 'state:', state);
   try {
     if (!paused) update();
     draw();
