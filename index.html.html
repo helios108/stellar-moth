@@ -179,8 +179,13 @@
   .btn-red  { background: linear-gradient(to bottom, #7a1515, #4a0d0d); }
   .btn-yel  { background: linear-gradient(to bottom, #7a6010, #4a3a08); }
   .btn-grn  { background: linear-gradient(to bottom, #0f5a0f, #083508); }
-  .btn-blu  { background: linear-gradient(to bottom, #102070, #080d44); }
+  .btn-blu  { background: linear-gradient(to bottom, #063a72, #031e40); }
   .btn-grey { background: linear-gradient(to bottom, #363636, #212121); }
+  .btn-silv { background: linear-gradient(to bottom, #5a5a5a, #363636); }
+  .btn-pink { background: linear-gradient(to bottom, #7a1258, #4a0935); }
+  .btn-nvy  { background: linear-gradient(to bottom, #14106a, #09063a); }
+  .btn-neon { background: radial-gradient(ellipse at 50% 40%, #0a1a0a 0%, #020702 65%); box-shadow: inset 0 1px 2px rgba(255,255,255,0.06), 0 2px 0 rgba(0,0,0,0.65), 0 3px 0 rgba(0,0,0,0.3); }
+  .btn-def  { background: linear-gradient(to bottom, #3a0a6a, #1e0538); }
 
   /* ── Vents ── */
   .vent-section { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; }
@@ -418,11 +423,11 @@
           <div class="btn btn-yel"></div>
           <div class="btn btn-grn"></div>
           <div class="btn btn-blu"></div>
-          <div class="btn btn-grey"></div>
-          <div class="btn btn-grey"></div>
-          <div class="btn btn-grey"></div>
-          <div class="btn btn-grey"></div>
-          <div class="btn btn-grey"></div>
+          <div class="btn btn-silv"></div>
+          <div class="btn btn-pink"></div>
+          <div class="btn btn-nvy"></div>
+          <div class="btn btn-neon"></div>
+          <div class="btn btn-def"></div>
         </div>
       </div>
       <div class="vent-section">
@@ -490,13 +495,13 @@
     <div class="bottom-left"><div class="speaker-grille"></div></div>
     <div class="bottom-center">
       <div class="btn-row-bottom">
-        <div class="flat-btn">F1</div>
-        <div class="flat-btn">F2</div>
-        <div class="flat-btn">F3</div>
-        <div class="flat-btn">F4</div>
-        <div class="flat-btn active">RUN</div>
-        <div class="flat-btn">HLT</div>
-        <div class="flat-btn">RST</div>
+        <div class="flat-btn active" id="btn-f1">SCAN</div>
+        <div class="flat-btn active" id="btn-f2">MUTE</div>
+        <div class="flat-btn active" id="btn-f3">LENS</div>
+        <div class="flat-btn active" id="btn-f4">TILT</div>
+        <div class="flat-btn" id="btn-run">PLAY</div>
+        <div class="flat-btn" id="btn-hlt">PAUS</div>
+        <div class="flat-btn" id="btn-rst">RSET</div>
       </div>
     </div>
     <div class="bottom-right"><div class="speaker-grille"></div></div>
@@ -537,12 +542,15 @@ const KEY = {};
 window.addEventListener('keydown', e => {
   KEY[e.code] = true;
   if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
+  if (e.code === 'Escape' && state === 'play') { paused = !paused; syncBottomBtns(); }
   ensureAudio();
 });
 window.addEventListener('keyup', e => { KEY[e.code] = false; });
 
 // ── GAME STATE ──────────────────────────────────────────────────────────────
 let state = 'menu'; // 'menu' | 'play' | 'over'
+let paused = false;
+let audioMuted = false;
 let score = 0, best = 0, lives = 3, wave = 0, frame = 0;
 let waveDelay = 0;
 let waveAnnounce = 0; // frames to show "WAVE X" banner
@@ -558,6 +566,8 @@ let eshots = [];      // enemy bullets
 let enemies = [];
 let sparks = [];
 let powerups = [];
+let bossExplosions = [];
+let screenFlash = 0;
 
 // ── POWER-UP CONFIG ──────────────────────────────────────────────────────────
 const PUPS = {
@@ -579,12 +589,14 @@ const STARS = Array.from({ length: 95 }, () => ({
 function startGame() {
   score = 0; lives = 3; wave = 0; frame = 0;
   waveDelay = 0; waveAnnounce = 0;
-  shots = []; eshots = []; enemies = []; sparks = []; powerups = [];
+  shots = []; eshots = []; enemies = []; sparks = []; powerups = []; bossExplosions = []; screenFlash = 0;
   px = W / 2; py = H - 80;
   pShootCD = 0; pInv = 0; pPow = null; pPowTimer = 0;
+  paused = false;
   nextWave();
   syncTerminal();
   state = 'play';
+  syncBottomBtns();
 }
 
 // ── WAVE SYSTEM ──────────────────────────────────────────────────────────────
@@ -631,17 +643,18 @@ function spawnEnemy(x, y, tier) {
 
 function spawnBoss() {
   const tier = Math.floor(wave / 5);
+  const hp  = 80 + (tier - 1) * 90;
+  const vx  = 0.8 + (tier - 1) * 0.3;
+  const scd = Math.max(35, 85 - (tier - 1) * 17);
   enemies.push({
     x: W / 2, y: 95,
-    hp: 55 + wave * 22,
-    maxHp: 55 + wave * 22,
-    vx: 1.2,
-    spd: 1,
-    st: 0,
-    scd: 48,
+    hp, maxHp: hp,
+    vx, spd: 1,
+    st: 0, scd,
     bphase: 0,
     tier,
-    isBoss: true
+    isBoss: true,
+    twitchTimer: 0, twitchX: 0, twitchY: 0,
   });
 }
 
@@ -722,6 +735,7 @@ function update() {
 
   tickSparks();
   tickPowerups();
+  tickBossExplosions();
 
   // Wave clear
   if (enemies.length === 0 && waveDelay === 0) waveDelay = 115;
@@ -753,27 +767,48 @@ function tickEnemy(e, i) {
 }
 
 function tickBoss(e, i) {
+  // Eye twitch
+  if (e.twitchTimer > 0) {
+    e.twitchTimer--;
+    e.twitchX = (Math.random() - 0.5) * 8;
+    e.twitchY = (Math.random() - 0.5) * 5;
+    if (e.twitchTimer === 0) { e.twitchX = 0; e.twitchY = 0; }
+  } else if (Math.random() < 0.007) {
+    e.twitchTimer = 4 + Math.floor(Math.random() * 6);
+  }
+
   e.x += e.vx * e.spd;
   if (e.x > W - 80 || e.x < 80) e.vx *= -1;
 
   const hpf = e.hp / e.maxHp;
   if (hpf < 0.5 && e.bphase === 0) e.bphase = 1;
-  if (hpf < 0.25 && e.bphase === 1) e.bphase = 2;
+  // Phase 2 threshold rises with each boss so later bosses spend longer in rage mode
+  const phase2HP = Math.min(0.25, 0.10 + (e.tier - 1) * 0.05);
+  if (hpf < phase2HP && e.bphase === 1) e.bphase = 2;
 
   e.st--;
-  const rate = e.bphase === 2 ? 22 : e.bphase === 1 ? 36 : 50;
+  // Fire rate tightens with each boss
+  const rate = e.bphase === 2
+    ? Math.max(18, 38 - (e.tier - 1) * 5)
+    : e.bphase === 1
+      ? Math.max(28, 56 - (e.tier - 1) * 8)
+      : Math.max(44, 80 - (e.tier - 1) * 12);
   if (e.st <= 0) {
     e.st = rate;
+    const shotSpd   = 2.8 + (e.tier - 1) * 0.45;
+    const spreadVx  = 2.0 + (e.tier - 1) * 0.28;
+    const spreadVy  = 3.5 + (e.tier - 1) * 0.25;
+    const cannonSpd = 2.4 + (e.tier - 1) * 0.3;
     if (e.bphase >= 1) {
       for (let a = -0.32; a <= 0.32; a += 0.16) {
-        eshots.push({ x: e.x + Math.sin(a) * 45, y: e.y + 44, vx: Math.sin(a) * 2.8, vy: 4.2 });
+        eshots.push({ x: e.x + Math.sin(a) * 45, y: e.y + 44, vx: Math.sin(a) * spreadVx, vy: spreadVy });
       }
     } else {
-      aimShot(e.x, e.y + 44, px, py, 3.5 + wave * 0.08);
+      aimShot(e.x, e.y + 44, px, py, shotSpd);
     }
     if (e.bphase >= 2) {
-      aimShot(e.x - 52, e.y + 10, px, py, 3);
-      aimShot(e.x + 52, e.y + 10, px, py, 3);
+      aimShot(e.x - 52, e.y + 10, px, py, cannonSpd);
+      aimShot(e.x + 52, e.y + 10, px, py, cannonSpd);
     }
   }
 
@@ -784,7 +819,7 @@ function killEnemy(i) {
   const e = enemies[i];
   score += e.isBoss ? 2000 + wave * 500 : (e.tier + 1) * 100;
   burst(e.x, e.y, '#ffcc44', e.isBoss ? 30 : 10, e.isBoss ? 5 : 3);
-  if (e.isBoss) burst(e.x, e.y, '#ff3366', 18, 4);
+  if (e.isBoss) { burst(e.x, e.y, '#ff3366', 18, 4); startBossExplosion(e.x, e.y); }
   tryDropPowerup(e.x, e.y, e.isBoss);
   playExplode(e.isBoss);
   enemies.splice(i, 1);
@@ -831,7 +866,7 @@ function hitPlayer() {
   pInv = 115;
   burst(px, py, '#2266ff', 14, 3.5);
   playHit();
-  if (lives <= 0) { if (score > best) best = score; state = 'over'; }
+  if (lives <= 0) { if (score > best) best = score; state = 'over'; syncBottomBtns(); }
   syncTerminal();
 }
 
@@ -950,9 +985,9 @@ function drawShip(x, y, flicker) {
 // e: [eColor[3], eTrim[3], eCoreInner]
 // b: [hull, core, coreInner, coreHi, cannon, cannonTip, line, label]
 const PALETTES = [
-  { p:['#0f3a8a','#1a5ccf','#2266cc','#4499ee','#88eeff','#cceeff'],   // 0 default blue/red
-    e:[['#bb2200','#bb0033','#880022'],['#ff5533','#ff2255','#ff1144'],'#ff4455'],
-    b:['#3a0018','#bb0033','#ff1144','#ff88aa','#550018','#ff1133','#cc0033','#884455'] },
+  { p:['#3a0a6a','#6a1aaa','#8822cc','#cc44ff','#ee99ff','#ffddff'],   // 0 purple/gold
+    e:[['#5a3800','#6a4400','#4a2a00'],['#ffaa00','#ffbb22','#ff9900'],'#ffdd44'],
+    b:['#2a1a44','#7a2288','#bb33cc','#ffaaee','#441060','#cc22ee','#880099','#885599'] },
   { p:['#6a0f0f','#aa1a1a','#cc2222','#ff4433','#ffaaaa','#ffdddd'],   // 1 red btn: crimson/purple
     e:[['#2a0055','#380066','#1a0044'],['#aa33ff','#cc44ff','#9922ee'],'#dd00ff'],
     b:['#1a0035','#660099','#aa22ee','#dd88ff','#330055','#9922dd','#7700cc','#995588'] },
@@ -1059,13 +1094,14 @@ function drawBossEnemy(e) {
   cx.lineTo(-50, -14);
   cx.closePath(); cx.fill();
 
-  // Core eye
+  // Core eye (twitches randomly)
+  const tx = e.twitchX || 0, ty = e.twitchY || 0;
   cx.fillStyle = PAL.b[1];
-  cx.beginPath(); cx.ellipse(0, -8, 22, 22, 0, 0, 6.28); cx.fill();
+  cx.beginPath(); cx.ellipse(tx, -8 + ty, 22, 22, 0, 0, 6.28); cx.fill();
   cx.fillStyle = PAL.b[2];
-  cx.beginPath(); cx.ellipse(0, -8, 13, 13, 0, 0, 6.28); cx.fill();
+  cx.beginPath(); cx.ellipse(tx, -8 + ty, 13, 13, 0, 0, 6.28); cx.fill();
   cx.fillStyle = PAL.b[3];
-  cx.beginPath(); cx.ellipse(-4, -12, 5, 6, 0, 0, 6.28); cx.fill();
+  cx.beginPath(); cx.ellipse(-4 + tx, -12 + ty, 5, 6, 0, 0, 6.28); cx.fill();
 
   // Wing cannons
   cx.fillStyle = PAL.b[4];
@@ -1144,17 +1180,17 @@ function drawPowerups() {
 }
 
 function drawShots() {
-  // Player shots — color shifts with active power-up
-  cx.fillStyle = pPow === 'triple' ? '#ffee44' : pPow === 'rapid' ? '#00eeff' : '#44bbff';
+  // Player shots — power-up colours override palette base colour
+  cx.fillStyle = pPow === 'triple' ? '#ffee44' : pPow === 'rapid' ? '#00eeff' : PAL.p[4];
   shots.forEach(s => {
     cx.beginPath(); cx.ellipse(s.x, s.y, 3, 7, 0, 0, 6.28); cx.fill();
   });
-  // Enemy shots
-  cx.fillStyle = '#ff2244';
+  // Enemy shots — outer uses enemy trim, inner uses enemy core colour
+  cx.fillStyle = PAL.e[1][0];
   eshots.forEach(s => {
     cx.beginPath(); cx.arc(s.x, s.y, 4, 0, 6.28); cx.fill();
   });
-  cx.fillStyle = '#ff8899';
+  cx.fillStyle = PAL.e[2];
   eshots.forEach(s => {
     cx.beginPath(); cx.arc(s.x, s.y, 2, 0, 6.28); cx.fill();
   });
@@ -1300,6 +1336,46 @@ function drawGameOver() {
   }
 }
 
+// ── BOSS EXPLOSION ───────────────────────────────────────────────────────────
+function startBossExplosion(x, y) {
+  bossExplosions.push({ x, y, timer: 95 });
+  screenFlash = 24;
+  burst(x, y, '#ffffff', 28, 8);
+  burst(x, y, '#ffcc44', 22, 6);
+  burst(x, y, '#ff4400', 18, 5);
+}
+
+function tickBossExplosions() {
+  if (screenFlash > 0) screenFlash--;
+  bossExplosions = bossExplosions.filter(ex => {
+    ex.timer--;
+    if (ex.timer % 7 === 0) {
+      const rx = ex.x + (Math.random() - 0.5) * 110;
+      const ry = ex.y + (Math.random() - 0.5) * 80;
+      burst(rx, ry, '#ffaa22', 10, 4);
+      burst(rx, ry, '#ff3300', 7, 3.5);
+    }
+    if (ex.timer % 23 === 0) burst(ex.x, ex.y, '#ffee88', 18, 5.5);
+    return ex.timer > 0;
+  });
+}
+
+function drawBossExplosions() {
+  bossExplosions.forEach(ex => {
+    const prog = 1 - ex.timer / 95;
+    const r1 = prog * 165;
+    cx.strokeStyle = `rgba(255,175,30,${Math.max(0, 0.7 - prog * 0.85)})`;
+    cx.lineWidth = 4 + (1 - prog) * 14;
+    cx.beginPath(); cx.arc(ex.x, ex.y, r1, 0, 6.28); cx.stroke();
+    if (prog > 0.15) {
+      const r2 = (prog - 0.15) * 165;
+      cx.strokeStyle = `rgba(255,70,0,${Math.max(0, 0.55 - (prog - 0.15) * 0.85)})`;
+      cx.lineWidth = 2 + (1 - prog) * 9;
+      cx.beginPath(); cx.arc(ex.x, ex.y, r2, 0, 6.28); cx.stroke();
+    }
+  });
+}
+
 // ── AUDIO SYSTEM ─────────────────────────────────────────────────────────────
 let audioCtx = null, masterGain = null;
 function ensureAudio() {
@@ -1313,7 +1389,7 @@ function ensureAudio() {
 }
 
 function tone(freq, freq2, dur, vol, type) {
-  if (!audioCtx) return;
+  if (!audioCtx || audioMuted) return;
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
   osc.type = type;
@@ -1326,7 +1402,7 @@ function tone(freq, freq2, dur, vol, type) {
 }
 
 function noise(dur, vol, cutoff) {
-  if (!audioCtx) return;
+  if (!audioCtx || audioMuted) return;
   const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * dur, audioCtx.sampleRate);
   const data = buf.getChannelData(0);
   for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
@@ -1366,6 +1442,63 @@ function applyKnob(name) {
     const el = document.getElementById('crt-screen');
     if (el) el.style.filter = `brightness(${0.25 + pct * 1.3})`;
   }
+}
+
+function syncBottomBtns() {
+  document.getElementById('btn-run')?.classList.toggle('active', !paused && state === 'play');
+  document.getElementById('btn-hlt')?.classList.toggle('active', paused && state === 'play');
+}
+
+function initBottomButtons() {
+  const f1  = document.getElementById('btn-f1');
+  const f2  = document.getElementById('btn-f2');
+  const f3  = document.getElementById('btn-f3');
+  const f4  = document.getElementById('btn-f4');
+  const run = document.getElementById('btn-run');
+  const hlt = document.getElementById('btn-hlt');
+  const rst = document.getElementById('btn-rst');
+
+  // F1 — toggle scanlines
+  f1?.addEventListener('click', () => {
+    const on = f1.classList.toggle('active');
+    document.getElementById('crt-scanlines').style.display = on ? '' : 'none';
+    document.querySelectorAll('.side-scanlines').forEach(el => el.style.display = on ? '' : 'none');
+  });
+
+  // F2 — mute / unmute all audio
+  f2?.addEventListener('click', () => {
+    audioMuted = !audioMuted;
+    bgMusic.muted = audioMuted;
+    f2.classList.toggle('active', !audioMuted);
+  });
+
+  // F3 — toggle CRT glass / vignette
+  f3?.addEventListener('click', () => {
+    const on = f3.classList.toggle('active');
+    document.getElementById('crt-glass').style.display = on ? '' : 'none';
+  });
+
+  // F4 — toggle perspective tilt
+  f4?.addEventListener('click', () => {
+    const on = f4.classList.toggle('active');
+    document.getElementById('crt-outer').style.transform = on ? '' : 'none';
+  });
+
+  // RUN — start game or resume from pause
+  run?.addEventListener('click', () => {
+    if (state === 'menu' || state === 'over') { startGame(); return; }
+    if (state === 'play') { paused = false; syncBottomBtns(); }
+  });
+
+  // HLT — pause game
+  hlt?.addEventListener('click', () => {
+    if (state !== 'play' || paused) return;
+    paused = true;
+    syncBottomBtns();
+  });
+
+  // RST — force restart at any time
+  rst?.addEventListener('click', () => { startGame(); });
 }
 
 function initButtons() {
@@ -1412,9 +1545,30 @@ function draw() {
     enemies.forEach(drawEnemy);
     drawShots();
     drawPowerups();
+    drawBossExplosions();
     drawSparks();
     drawShip(px, py, pInv > 0);
     drawHUD();
+    if (screenFlash > 0) {
+      cx.fillStyle = `rgba(255,200,50,${(screenFlash / 24) * 0.6})`;
+      cx.fillRect(0, 0, W, H);
+    }
+    if (paused) {
+      cx.fillStyle = 'rgba(0,4,18,0.75)';
+      cx.fillRect(0, 0, W, H);
+      cx.fillStyle = '#0a1e44';
+      cx.fillRect(W / 2 - 110, H / 2 - 30, 220, 52);
+      cx.strokeStyle = '#1a3a88';
+      cx.lineWidth = 1;
+      cx.strokeRect(W / 2 - 110, H / 2 - 30, 220, 52);
+      cx.fillStyle = '#4488ff';
+      cx.font = 'bold 20px "Courier New", monospace';
+      cx.textAlign = 'center';
+      cx.fillText('— HALTED —', W / 2, H / 2 + 2);
+      cx.fillStyle = '#223355';
+      cx.font = '10px "Courier New", monospace';
+      cx.fillText('PRESS  PLAY  OR  ESC  TO  RESUME', W / 2, H / 2 + 18);
+    }
   } else if (state === 'menu') {
     drawMenu();
   } else {
@@ -1427,12 +1581,13 @@ function draw() {
 }
 
 function loop() {
-  update();
+  if (!paused) update();
   draw();
   requestAnimationFrame(loop);
 }
 
 loop();
+initBottomButtons();
 initButtons();
 initKnobs();
 </script>
