@@ -525,14 +525,12 @@ function startBgMusic() {
   bgMusic.play().catch(() => {});
 }
 
-// Try immediately; if blocked, start on first user interaction
 bgMusic.play().catch(() => {
   const unlock = () => { startBgMusic(); document.removeEventListener('keydown', unlock); document.removeEventListener('click', unlock); };
   document.addEventListener('keydown', unlock, { once: true });
   document.addEventListener('click', unlock, { once: true });
 });
 
-// ── INPUT ───────────────────────────────────────────────────────────────────
 const KEY = {};
 window.addEventListener('keydown', e => {
   KEY[e.code] = true;
@@ -541,34 +539,29 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => { KEY[e.code] = false; });
 
-// ── GAME STATE ──────────────────────────────────────────────────────────────
-let state = 'menu'; // 'menu' | 'play' | 'over'
+let state = 'menu';
 let score = 0, best = 0, lives = 3, wave = 0, frame = 0;
 let waveDelay = 0;
-let waveAnnounce = 0; // frames to show "WAVE X" banner
+let waveAnnounce = 0;
 
-// ── PLAYER ──────────────────────────────────────────────────────────────────
 let px = W / 2, py = H - 80;
 let pShootCD = 0, pInv = 0, pPow = null, pPowTimer = 0;
 const P_SPD = 5, P_W = 28, P_H = 26;
 
-// ── GAME OBJECTS ────────────────────────────────────────────────────────────
-let shots = [];       // player bullets
-let eshots = [];      // enemy bullets
+let shots = [];
+let eshots = [];
 let enemies = [];
 let sparks = [];
 let powerups = [];
-let wreckages = [];   // dead enemy debris sprites
-let explosions = [];  // expanding shockwave rings
+let wreckages = [];
+let explosions = [];
 
-// ── POWER-UP CONFIG ──────────────────────────────────────────────────────────
 const PUPS = {
   rapid:  { color: '#00eeff', label: 'R', name: 'RAPID FIRE',  dur: 500 },
   triple: { color: '#ffdd00', label: 'T', name: 'TRIPLE SHOT', dur: 450 },
   life:   { color: '#ff55ff', label: '+', name: '+1 LIFE',     dur: 0   },
 };
 
-// ── STARFIELD ───────────────────────────────────────────────────────────────
 const STARS = Array.from({ length: 95 }, () => ({
   x: Math.random() * W,
   y: Math.random() * H,
@@ -577,7 +570,6 @@ const STARS = Array.from({ length: 95 }, () => ({
   a: Math.random() * 0.5 + 0.15
 }));
 
-// ── INIT ─────────────────────────────────────────────────────────────────────
 function startGame() {
   score = 0; lives = 3; wave = 0; frame = 0;
   waveDelay = 0; waveAnnounce = 0;
@@ -589,7 +581,6 @@ function startGame() {
   state = 'play';
 }
 
-// ── WAVE SYSTEM ──────────────────────────────────────────────────────────────
 function nextWave() {
   wave++;
   waveAnnounce = 140;
@@ -647,7 +638,6 @@ function spawnBoss() {
   });
 }
 
-// ── UPDATE ───────────────────────────────────────────────────────────────────
 function update() {
   frame++;
 
@@ -661,7 +651,6 @@ function update() {
     return;
   }
 
-  // Player move
   if (KEY['ArrowLeft'] || KEY['KeyA']) px -= P_SPD;
   if (KEY['ArrowRight'] || KEY['KeyD']) px += P_SPD;
   if (KEY['ArrowUp'] || KEY['KeyW']) py -= P_SPD;
@@ -672,7 +661,6 @@ function update() {
   if (pInv > 0) pInv--;
   if (pShootCD > 0) pShootCD--;
 
-  // Player shoot
   if ((KEY['Space'] || KEY['KeyZ']) && pShootCD <= 0) {
     const sy = py - P_H / 2 - 2;
     if (pPow === 'triple') {
@@ -687,7 +675,6 @@ function update() {
     burst(px, py + P_H / 2 + 4, '#3388ee', 3, 2);
   }
 
-  // Player bullets
   shots = shots.filter(s => {
     s.y -= 13;
     s.x += s.vx;
@@ -705,7 +692,6 @@ function update() {
     return true;
   });
 
-  // Enemy bullets
   eshots = eshots.filter(s => {
     s.x += s.vx; s.y += s.vy;
     if (s.y > H + 10 || s.x < -10 || s.x > W + 10) return false;
@@ -717,7 +703,6 @@ function update() {
     return true;
   });
 
-  // Enemies
   for (let i = enemies.length - 1; i >= 0; i--) {
     const e = enemies[i];
     e.isBoss ? tickBoss(e, i) : tickEnemy(e, i);
@@ -727,11 +712,9 @@ function update() {
   tickWreckages();
   tickPowerups();
 
-  // Wave clear
   if (enemies.length === 0 && waveDelay === 0) waveDelay = 115;
   if (waveDelay > 0) { waveDelay--; if (waveDelay === 0) nextWave(); }
 
-  // Wave announce timer
   if (waveAnnounce > 0) waveAnnounce--;
 }
 
@@ -876,12 +859,10 @@ function boxHit(ax, ay, aw, ah, bx, by, bw, bh) {
 
 function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
 
-// ── DRAWING ───────────────────────────────────────────────────────────────────
 function drawBg() {
   cx.fillStyle = '#03060e';
   cx.fillRect(0, 0, W, H);
 
-  // Nebula blobs
   const blobs = [
     { x: W * 0.25, y: H * 0.35, r: 170, g: [0, 20, 80] },
     { x: W * 0.78, y: H * 0.22, r: 130, g: [40, 0, 90] },
@@ -895,7 +876,6 @@ function drawBg() {
     cx.beginPath(); cx.arc(b.x, b.y, b.r, 0, 6.28); cx.fill();
   });
 
-  // Stars
   STARS.forEach(s => {
     s.y += s.spd;
     if (s.y > H + 2) { s.y = 0; s.x = Math.random() * W; }
@@ -909,7 +889,6 @@ function drawBg() {
 function drawShip(x, y, flicker) {
   if (flicker && Math.floor(frame / 5) % 2 === 0) return;
 
-  // Thruster flame
   const fl = 9 + Math.sin(frame * 0.35) * 4;
   cx.globalAlpha = 0.8;
   cx.fillStyle = '#ff9900';
@@ -923,7 +902,6 @@ function drawShip(x, y, flicker) {
   cx.closePath(); cx.fill();
   cx.globalAlpha = 1;
 
-  // Wings
   cx.fillStyle = PAL.p[0];
   cx.beginPath();
   cx.moveTo(x, y - 13); cx.lineTo(x - 24, y + 7); cx.lineTo(x - 13, y + 13); cx.lineTo(x - 1, y + 5);
@@ -932,7 +910,6 @@ function drawShip(x, y, flicker) {
   cx.moveTo(x, y - 13); cx.lineTo(x + 24, y + 7); cx.lineTo(x + 13, y + 13); cx.lineTo(x + 1, y + 5);
   cx.closePath(); cx.fill();
 
-  // Wing outline (subtle)
   cx.strokeStyle = PAL.p[3];
   cx.lineWidth = 0.8;
   cx.globalAlpha = 0.4;
@@ -944,7 +921,6 @@ function drawShip(x, y, flicker) {
   cx.closePath(); cx.stroke();
   cx.globalAlpha = 1;
 
-  // Wing accent
   cx.fillStyle = PAL.p[1];
   cx.beginPath();
   cx.moveTo(x - 2, y - 6); cx.lineTo(x - 18, y + 5); cx.lineTo(x - 13, y + 7); cx.lineTo(x - 2, y + 2);
@@ -953,13 +929,11 @@ function drawShip(x, y, flicker) {
   cx.moveTo(x + 2, y - 6); cx.lineTo(x + 18, y + 5); cx.lineTo(x + 13, y + 7); cx.lineTo(x + 2, y + 2);
   cx.closePath(); cx.fill();
 
-  // Body
   cx.fillStyle = PAL.p[2];
   cx.beginPath();
   cx.moveTo(x, y - 16); cx.lineTo(x + 8, y + 3); cx.lineTo(x + 7, y + 13); cx.lineTo(x - 7, y + 13); cx.lineTo(x - 8, y + 3);
   cx.closePath(); cx.fill();
 
-  // Body outline
   cx.strokeStyle = PAL.p[3];
   cx.lineWidth = 1.5;
   cx.globalAlpha = 0.6;
@@ -968,47 +942,41 @@ function drawShip(x, y, flicker) {
   cx.closePath(); cx.stroke();
   cx.globalAlpha = 1;
 
-  // Cockpit
   cx.fillStyle = PAL.p[4];
   cx.beginPath(); cx.ellipse(x, y - 4, 5, 7, 0, 0, 6.28); cx.fill();
   cx.fillStyle = PAL.p[5];
   cx.beginPath(); cx.ellipse(x - 1.5, y - 6, 2, 3, -0.3, 0, 6.28); cx.fill();
 }
 
-// ── COLOUR PALETTES ──────────────────────────────────────────────────────────
-// p: [wingDark, wingMid, body, outline, cockpit, cockpitHi]
-// e: [eColor[3], eTrim[3], eCoreInner]
-// b: [hull, core, coreInner, coreHi, cannon, cannonTip, line, label]
 const PALETTES = [
-  { p:['#0f3a8a','#1a5ccf','#2266cc','#4499ee','#88eeff','#cceeff'],   // 0 default blue/red
+  { p:['#0f3a8a','#1a5ccf','#2266cc','#4499ee','#88eeff','#cceeff'],
     e:[['#bb2200','#bb0033','#880022'],['#ff5533','#ff2255','#ff1144'],'#ff4455'],
     b:['#3a0018','#bb0033','#ff1144','#ff88aa','#550018','#ff1133','#cc0033','#884455'] },
-  { p:['#6a0f0f','#aa1a1a','#cc2222','#ff4433','#ffaaaa','#ffdddd'],   // 1 red btn: crimson/purple
+  { p:['#6a0f0f','#aa1a1a','#cc2222','#ff4433','#ffaaaa','#ffdddd'],
     e:[['#2a0055','#380066','#1a0044'],['#aa33ff','#cc44ff','#9922ee'],'#dd00ff'],
     b:['#1a0035','#660099','#aa22ee','#dd88ff','#330055','#9922dd','#7700cc','#995588'] },
-  { p:['#5a4208','#8a650f','#cc9922','#eecc44','#ffee88','#ffffcc'],   // 2 yel btn: amber/teal
+  { p:['#5a4208','#8a650f','#cc9922','#eecc44','#ffee88','#ffffcc'],
     e:[['#004444','#005a55','#003333'],['#00ccaa','#00ddbb','#00aa99'],'#00ffcc'],
     b:['#001e1e','#006655','#00aa88','#66ffdd','#004433','#00cc99','#00887a','#337766'] },
-  { p:['#0a450a','#127012','#1a991a','#33cc44','#99ff99','#ccffcc'],   // 3 grn btn: emerald/orange
+  { p:['#0a450a','#127012','#1a991a','#33cc44','#99ff99','#ccffcc'],
     e:[['#7a2800','#8a3300','#6a2000'],['#ff7700','#ff8800','#ff6600'],'#ff4400'],
     b:['#251000','#aa4400','#ff7700','#ffcc66','#662200','#ff6600','#cc5500','#885533'] },
-  { p:['#002255','#0044aa','#0066dd','#00aaff','#00eeff','#aaffff'],   // 4 blu btn: cyan/magenta
+  { p:['#002255','#0044aa','#0066dd','#00aaff','#00eeff','#aaffff'],
     e:[['#550040','#660050','#440035'],['#ff00cc','#ff22dd','#ee00bb'],'#ff44ee'],
     b:['#200035','#880066','#dd00aa','#ff66dd','#440033','#ff00cc','#cc0099','#884466'] },
-  { p:['#282828','#424242','#606060','#989898','#cccccc','#f0f0f0'],   // 5 grey: monochrome
+  { p:['#282828','#424242','#606060','#989898','#cccccc','#f0f0f0'],
     e:[['#3a0000','#4a0000','#2a0000'],['#cc2200','#dd3300','#bb1100'],'#ff2200'],
     b:['#111111','#3a0000','#aa1100','#ff5533','#220000','#cc1100','#881100','#664433'] },
-  { p:['#5a0a3a','#8a1266','#cc2288','#ff44aa','#ffaadd','#ffddee'],   // 6 grey: pink/lime
+  { p:['#5a0a3a','#8a1266','#cc2288','#ff44aa','#ffaadd','#ffddee'],
     e:[['#1a3a00','#224a00','#102800'],['#66ee00','#88ff00','#55cc00'],'#aaff00'],
     b:['#0a1500','#336600','#66cc00','#bbff44','#1a3300','#55cc00','#448800','#557733'] },
-  { p:['#0a1e44','#122a66','#1a3a99','#3366cc','#6699ff','#aaccff'],   // 7 grey: navy/copper
+  { p:['#0a1e44','#122a66','#1a3a99','#3366cc','#6699ff','#aaccff'],
     e:[['#5a2a00','#6a3500','#4a2000'],['#cc7700','#dd8800','#bb6600'],'#ff9900'],
     b:['#2a1000','#884400','#cc7700','#ffcc88','#5a2200','#ff8800','#aa5500','#775533'] },
-  { p:['#0d1530','#007733','#141830','#00ff55','#22ff88','#99ffcc'],   // 8 void/neon
+  { p:['#0d1530','#007733','#141830','#00ff55','#22ff88','#99ffcc'],
     e:[['#440022','#550033','#330018'],['#ff00cc','#ff22dd','#ee00bb'],'#ff44ee'],
     b:['#2a0022','#880055','#cc0088','#ff66cc','#440033','#ff00bb','#aa0077','#cc88bb'] },
 ];
-// Maps button order (red,yel,grn,blu,grey×5) → palette index
 const BTN_PAL = [1, 2, 3, 4, 5, 6, 7, 8, 0];
 let PAL = PALETTES[0];
 
@@ -1019,7 +987,6 @@ function drawEnemy(e) {
   cx.fillStyle = PAL.e[0][t];
 
   if (t === 0) {
-    // Scout: pointed pentagon
     cx.beginPath();
     cx.moveTo(x, y - 14); cx.lineTo(x + 15, y + 4); cx.lineTo(x + 9, y + 14);
     cx.lineTo(x - 9, y + 14); cx.lineTo(x - 15, y + 4);
@@ -1027,7 +994,6 @@ function drawEnemy(e) {
     cx.fillStyle = PAL.e[1][0];
     cx.beginPath(); cx.arc(x, y + 2, 4, 0, 6.28); cx.fill();
   } else if (t === 1) {
-    // Cruiser: wider with side guns
     cx.beginPath();
     cx.moveTo(x, y - 15); cx.lineTo(x + 20, y + 2); cx.lineTo(x + 14, y + 14);
     cx.lineTo(x - 14, y + 14); cx.lineTo(x - 20, y + 2);
@@ -1038,7 +1004,6 @@ function drawEnemy(e) {
     cx.fillStyle = PAL.e[1][1];
     cx.beginPath(); cx.ellipse(x, y + 2, 6, 5, 0, 0, 6.28); cx.fill();
   } else {
-    // Destroyer: heavy hulk
     cx.beginPath();
     cx.moveTo(x, y - 16); cx.lineTo(x + 24, y + 0); cx.lineTo(x + 18, y + 16);
     cx.lineTo(x - 18, y + 16); cx.lineTo(x - 24, y + 0);
@@ -1052,7 +1017,6 @@ function drawEnemy(e) {
     cx.beginPath(); cx.ellipse(x, y + 2, 3, 3, 0, 0, 6.28); cx.fill();
   }
 
-  // Outline glow-ish
   cx.strokeStyle = PAL.e[1][t];
   cx.lineWidth = 1;
   cx.globalAlpha = 0.35;
@@ -1063,7 +1027,6 @@ function drawEnemy(e) {
   cx.stroke();
   cx.globalAlpha = 1;
 
-  // HP bar if damaged
   if (e.hp < e.maxHp) {
     cx.fillStyle = '#2a0000';
     cx.fillRect(x - 14, y - 21, 28, 4);
@@ -1081,7 +1044,6 @@ function drawBossEnemy(e) {
   cx.translate(x, y);
   cx.scale(pulse, pulse);
 
-  // Hull
   cx.fillStyle = PAL.b[0];
   cx.beginPath();
   cx.moveTo(0, -46); cx.lineTo(50, -14); cx.lineTo(54, 20);
@@ -1089,7 +1051,6 @@ function drawBossEnemy(e) {
   cx.lineTo(-50, -14);
   cx.closePath(); cx.fill();
 
-  // Core eye
   cx.fillStyle = PAL.b[1];
   cx.beginPath(); cx.ellipse(0, -8, 22, 22, 0, 0, 6.28); cx.fill();
   cx.fillStyle = PAL.b[2];
@@ -1097,7 +1058,6 @@ function drawBossEnemy(e) {
   cx.fillStyle = PAL.b[3];
   cx.beginPath(); cx.ellipse(-4, -12, 5, 6, 0, 0, 6.28); cx.fill();
 
-  // Wing cannons
   cx.fillStyle = PAL.b[4];
   cx.fillRect(-55, 8, 24, 10);
   cx.fillRect(31, 8, 24, 10);
@@ -1105,7 +1065,6 @@ function drawBossEnemy(e) {
   cx.fillRect(-58, 10, 6, 6);
   cx.fillRect(52, 10, 6, 6);
 
-  // Hull lines
   cx.strokeStyle = PAL.b[6];
   cx.lineWidth = 1.5;
   cx.beginPath(); cx.moveTo(-36, -2); cx.lineTo(36, -2); cx.stroke();
@@ -1113,7 +1072,6 @@ function drawBossEnemy(e) {
 
   cx.restore();
 
-  // HP bar
   const bw = 130;
   cx.fillStyle = 'rgba(0,0,0,0.65)';
   cx.fillRect(x - bw / 2, y + 50, bw, 8);
@@ -1123,7 +1081,6 @@ function drawBossEnemy(e) {
   cx.lineWidth = 1;
   cx.strokeRect(x - bw / 2, y + 50, bw, 8);
 
-  // Boss label above HP
   cx.fillStyle = PAL.b[7];
   cx.font = '10px "Courier New", monospace';
   cx.textAlign = 'center';
@@ -1136,20 +1093,17 @@ function drawPowerups() {
     const r = 13;
     const x = p.x, y = p.y + bob;
 
-    // Pulsing outer ring
     cx.strokeStyle = cfg.color;
     cx.lineWidth = 1;
     cx.globalAlpha = 0.25 + Math.sin(p.bob * 2) * 0.1;
     cx.beginPath(); cx.arc(x, y, r + 6, 0, 6.28); cx.stroke();
     cx.globalAlpha = 1;
 
-    // Diamond fill
     cx.fillStyle = '#010d1a';
     cx.beginPath();
     cx.moveTo(x, y - r); cx.lineTo(x + r, y); cx.lineTo(x, y + r); cx.lineTo(x - r, y);
     cx.closePath(); cx.fill();
 
-    // Diamond tint
     cx.fillStyle = cfg.color;
     cx.globalAlpha = 0.18;
     cx.beginPath();
@@ -1157,14 +1111,12 @@ function drawPowerups() {
     cx.closePath(); cx.fill();
     cx.globalAlpha = 1;
 
-    // Diamond border
     cx.strokeStyle = cfg.color;
     cx.lineWidth = 1.5;
     cx.beginPath();
     cx.moveTo(x, y - r); cx.lineTo(x + r, y); cx.lineTo(x, y + r); cx.lineTo(x - r, y);
     cx.closePath(); cx.stroke();
 
-    // Label letter
     cx.fillStyle = cfg.color;
     cx.font = 'bold 11px "Courier New", monospace';
     cx.textAlign = 'center';
@@ -1173,12 +1125,10 @@ function drawPowerups() {
 }
 
 function drawShots() {
-  // Player shots — color shifts with active power-up
   cx.fillStyle = pPow === 'triple' ? '#ffee44' : pPow === 'rapid' ? '#00eeff' : '#44bbff';
   shots.forEach(s => {
     cx.beginPath(); cx.ellipse(s.x, s.y, 3, 7, 0, 0, 6.28); cx.fill();
   });
-  // Enemy shots
   cx.fillStyle = '#ff2244';
   eshots.forEach(s => {
     cx.beginPath(); cx.arc(s.x, s.y, 4, 0, 6.28); cx.fill();
@@ -1227,32 +1177,27 @@ function drawEnemyWreck(w) {
   cx.strokeStyle = '#ff6600';
 
   if (t === 0) {
-    // Nose fragment drifts up
     cx.beginPath();
     cx.moveTo(x,       y - 14 - d);
     cx.lineTo(x + 6,   y - 3  - d);
     cx.lineTo(x - 6,   y - 3  - d);
     cx.closePath(); cx.fill(); cx.stroke();
-    // Left wing drifts left
     cx.beginPath();
     cx.moveTo(x - 6 - d,  y - 3);
     cx.lineTo(x - 15 - d, y + 4);
     cx.lineTo(x - 9 - d,  y + 14);
     cx.lineTo(x - d,      y + 8);
     cx.closePath(); cx.fill(); cx.stroke();
-    // Right wing drifts right
     cx.beginPath();
     cx.moveTo(x + 6 + d,  y - 3);
     cx.lineTo(x + 15 + d, y + 4);
     cx.lineTo(x + 9 + d,  y + 14);
     cx.lineTo(x + d,      y + 8);
     cx.closePath(); cx.fill(); cx.stroke();
-    // Core debris
     cx.fillStyle = '#ffee44';
     cx.beginPath(); cx.arc(x, y + 2, 4, 0, 6.28); cx.fill();
 
   } else if (t === 1) {
-    // Hull (stays near center)
     cx.beginPath();
     cx.moveTo(x,      y - 15);
     cx.lineTo(x + 14, y + 2);
@@ -1260,19 +1205,15 @@ function drawEnemyWreck(w) {
     cx.lineTo(x - 10, y + 14);
     cx.lineTo(x - 14, y + 2);
     cx.closePath(); cx.fill(); cx.stroke();
-    // Left gun drifts left
     cx.fillStyle = p.e[0][t];
     cx.fillRect(x - 23 - d * 1.3, y + 4, 9, 6);
     cx.strokeRect(x - 23 - d * 1.3, y + 4, 9, 6);
-    // Right gun drifts right
     cx.fillRect(x + 14 + d * 1.3, y + 4, 9, 6);
     cx.strokeRect(x + 14 + d * 1.3, y + 4, 9, 6);
-    // Core
     cx.fillStyle = '#ffee44';
     cx.beginPath(); cx.arc(x, y + 2, 4, 0, 6.28); cx.fill();
 
   } else {
-    // Hull (stays near center)
     cx.beginPath();
     cx.moveTo(x,      y - 16);
     cx.lineTo(x + 18, y);
@@ -1280,14 +1221,11 @@ function drawEnemyWreck(w) {
     cx.lineTo(x - 12, y + 16);
     cx.lineTo(x - 18, y);
     cx.closePath(); cx.fill(); cx.stroke();
-    // Left gun drifts left
     cx.fillStyle = p.e[0][t];
     cx.fillRect(x - 26 - d * 1.4, y + 3, 10, 7);
     cx.strokeRect(x - 26 - d * 1.4, y + 3, 10, 7);
-    // Right gun drifts right
     cx.fillRect(x + 16 + d * 1.4, y + 3, 10, 7);
     cx.strokeRect(x + 16 + d * 1.4, y + 3, 10, 7);
-    // Core
     cx.fillStyle = '#ffee44';
     cx.beginPath(); cx.arc(x, y + 2, 5, 0, 6.28); cx.fill();
   }
@@ -1299,16 +1237,13 @@ function drawBossWreck(w) {
   const d = age * 20;
 
   cx.strokeStyle = '#ff6600';
-  // Left wing drifts left
   cx.fillStyle = p.b[5];
   cx.fillRect(x - 55 - d * 1.3, y + 8, 24, 10);
   cx.strokeRect(x - 55 - d * 1.3, y + 8, 24, 10);
   cx.fillRect(x - 58 - d * 1.3, y + 10, 6, 6);
-  // Right wing drifts right
   cx.fillRect(x + 31 + d * 1.3, y + 8, 24, 10);
   cx.strokeRect(x + 31 + d * 1.3, y + 8, 24, 10);
   cx.fillRect(x + 52 + d * 1.3, y + 10, 6, 6);
-  // Hull sinks
   cx.fillStyle = p.b[2];
   cx.beginPath();
   cx.moveTo(x,      y - 46 + d * 0.4);
@@ -1319,7 +1254,6 @@ function drawBossWreck(w) {
   cx.lineTo(x - 54, y + 20 + d * 0.4);
   cx.lineTo(x - 50, y - 14 + d * 0.4);
   cx.closePath(); cx.fill(); cx.stroke();
-  // Cracked core eye
   cx.fillStyle = p.b[1];
   cx.beginPath(); cx.arc(x, y - 8 + d * 0.4, 22, 0, 6.28); cx.fill();
   cx.fillStyle = '#ffee44';
@@ -1338,7 +1272,6 @@ function syncTerminal() {
 }
 
 function drawHUD() {
-  // Active power-up badge (top centre of canvas)
   if (pPow) {
     const cfg = PUPS[pPow];
     const frac = pPowTimer / cfg.dur;
@@ -1361,7 +1294,6 @@ function drawHUD() {
     cx.globalAlpha = 1;
   }
 
-  // Wave announce banner
   if (waveAnnounce > 0) {
     const alpha = Math.min(1, waveAnnounce / 30) * Math.min(1, waveAnnounce / 140 * 3);
     cx.globalAlpha = alpha;
@@ -1381,7 +1313,6 @@ function drawHUD() {
 function drawMenu() {
   cx.textAlign = 'center';
 
-  // Drop shadow
   cx.fillStyle = '#001133';
   cx.font = 'bold 50px "Courier New", monospace';
   cx.fillText('STELLAR', W / 2 + 2, H / 2 - 76 + 2);
@@ -1414,7 +1345,6 @@ function drawMenu() {
     cx.fillText('BEST  ' + String(best).padStart(7, '0'), W / 2, H / 2 + 104);
   }
 
-  // Preview ship
   drawShip(W / 2, H / 2 - 150, false);
 }
 
@@ -1457,7 +1387,6 @@ function drawGameOver() {
   }
 }
 
-// ── AUDIO SYSTEM ─────────────────────────────────────────────────────────────
 let audioCtx = null, masterGain = null;
 function ensureAudio() {
   if (!audioCtx) {
@@ -1504,7 +1433,6 @@ function playHit()        { tone(160, 55, 0.28, 0.3, 'sawtooth'); noise(0.12, 0.
 function playPowerup()    { tone(440, 880, 0.12, 0.18, 'sine'); setTimeout(() => tone(880, 1760, 0.1, 0.12, 'sine'), 100); }
 function playWave()       { if (audioCtx) tone(330, 660, 0.25, 0.12, 'sine'); }
 
-// ── KNOB SYSTEM ───────────────────────────────────────────────────────────────
 const KNOB = {
   vol: { angle: 45,  tickEl: null },
   brt: { angle: 80,  tickEl: null }
@@ -1535,7 +1463,6 @@ function initButtons() {
       btn.classList.add('pal-active');
     });
   });
-  // Wire RESET big-btn to restart game
   document.querySelector('.big-btn')?.addEventListener('click', () => {
     if (state !== 'play') startGame();
   });
@@ -1562,7 +1489,6 @@ function initKnobs() {
   document.addEventListener('mouseup', () => { dragKnob = null; });
 }
 
-// ── MAIN LOOP ─────────────────────────────────────────────────────────────────
 function draw() {
   drawBg();
   if (state === 'play') {
@@ -1577,7 +1503,6 @@ function draw() {
   } else if (state === 'menu') {
     drawMenu();
   } else {
-    // game over — keep scene alive
     enemies.forEach(drawEnemy);
     drawExplosions();
     drawShots();
