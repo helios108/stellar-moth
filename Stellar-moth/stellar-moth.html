@@ -15,13 +15,11 @@
     font-family: 'Courier New', monospace;
   }
 
-  /* ── 3D perspective tilt on the whole unit ── */
   #crt-outer {
     transform: perspective(1100px) rotateX(2deg);
     transform-origin: center 58%;
   }
 
-  /* ── Main housing face ── */
   #crt-body {
     display: flex;
     align-items: stretch;
@@ -34,14 +32,13 @@
       inset 3px 0 5px rgba(255,255,255,0.03),
       inset -3px 0 5px rgba(0,0,0,0.2),
       inset 0 -6px 14px rgba(0,0,0,0.55),
-      /* Stepped 3D bottom extrusion */
+      
       0  4px 0 #1e1e1e,
       0  8px 0 #141414,
       0  0  0 1.5px #0c0c0c,
       0 22px 60px rgba(0,0,0,0.97);
   }
 
-  /* ── Bottom function-key strip ── */
   #crt-bottom {
     background: linear-gradient(158deg, #2e2e2e 0%, #1c1c1c 50%, #252525 100%);
     border-radius: 0 0 10px 10px;
@@ -57,7 +54,6 @@
       0 20px 50px rgba(0,0,0,0.9);
   }
 
-  /* ── Side panels ── */
   .crt-side {
     width: 112px;
     flex-shrink: 0;
@@ -66,7 +62,6 @@
     gap: 11px;
   }
 
-  /* ── Side mini-screens ── */
   .side-screen {
     border: 2px solid #0c0c0c;
     border-radius: 10px;
@@ -74,7 +69,7 @@
     position: relative;
     box-shadow: inset 0 0 10px rgba(0,0,0,0.9), 0 0 7px rgba(20,90,255,0.1);
   }
-  /* Convex glass overlay on side screens */
+  
   .side-screen::after {
     content: '';
     position: absolute; inset: 0;
@@ -85,7 +80,7 @@
     z-index: 5;
     border-radius: inherit;
   }
-  /* Scanlines overlay for side screens */
+  
   .side-scanlines {
     position: absolute; inset: 0;
     background: repeating-linear-gradient(
@@ -95,7 +90,7 @@
     pointer-events: none;
     z-index: 4;
   }
-  /* Score / Lives screen text styles */
+  
   .ss-data-label {
     font-size: 7px;
     color: rgba(80,175,255,0.75);
@@ -142,12 +137,11 @@
     letter-spacing: 2.5px;
     border-top: 1px solid #070707;
   }
-  /* Bar-graph variant */
+  
   .side-bars { justify-content: space-around; }
   .bar-row { display: flex; align-items: center; height: 11px; }
   .bar { height: 6px; background: rgba(30,110,255,0.5); border-radius: 1px; }
 
-  /* ── Button panel ── */
   .btn-panel {
     background: #181818;
     border-radius: 4px;
@@ -182,7 +176,6 @@
   .btn-blu  { background: linear-gradient(to bottom, #102070, #080d44); }
   .btn-grey { background: linear-gradient(to bottom, #363636, #212121); }
 
-  /* ── Vents ── */
   .vent-section { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; }
   .vents {
     height: 54px;
@@ -198,7 +191,6 @@
     box-shadow: inset 0 1px 5px rgba(0,0,0,0.85);
   }
 
-  /* ── Knob section ── */
   .knob-section {
     background: #181818;
     border-radius: 4px;
@@ -235,7 +227,6 @@
     transform: translateX(-50%) rotate(-45deg);
   }
 
-  /* ── Indicator LEDs ── */
   .indicator-section {
     background: #181818;
     border-radius: 4px;
@@ -255,7 +246,6 @@
   .ind-dim   { background: #1a1a1a; }
   @keyframes blink-led { 0%,100%{opacity:1} 50%{opacity:0.12} }
 
-  /* ── Reset button ── */
   .big-btn-section { margin-top: auto; }
   .big-btn {
     background: linear-gradient(to bottom, #3a1818, #220d0d);
@@ -270,7 +260,6 @@
     cursor: pointer;
   }
 
-  /* ── Center column ── */
   #crt-center {
     flex: 1;
     display: flex;
@@ -279,7 +268,6 @@
     gap: 8px;
   }
 
-  /* ── Screen bezel ── */
   #crt-screen-bezel {
     background: #0d0d0d;
     padding: 10px;
@@ -288,7 +276,6 @@
     width: 100%;
   }
 
-  /* ── The actual screen ── */
   #crt-screen {
     position: relative;
     border-radius: 14px;
@@ -296,7 +283,7 @@
     box-shadow:
       inset 0 0 0 2px #060606,
       inset 0 0 20px rgba(0,0,0,0.8),
-      /* Blue phosphor glow — subtle */
+      
       0 0 12px rgba(20,80,255,0.18),
       0 0 30px rgba(20,80,255,0.07),
       0 0 65px rgba(20,80,255,0.03);
@@ -312,7 +299,7 @@
     pointer-events: none; z-index: 2;
     border-radius: inherit;
   }
-  /* Convex glass: corner vignette + top-left specular highlight */
+  
   #crt-glass {
     position: absolute; inset: 0;
     background:
@@ -322,7 +309,6 @@
     border-radius: inherit;
   }
 
-  /* ── Nameplate ── */
   #crt-nameplate {
     display: flex;
     align-items: center;
@@ -340,7 +326,6 @@
   .led-np-grn   { background: #0a4a0a; box-shadow: 0 0 5px #00cc44; }
   .led-np-amber { background: #4a3000; box-shadow: 0 0 4px #cc8800; }
 
-  /* ── Bottom strip ── */
   .bottom-left, .bottom-right { flex-shrink: 0; }
   .bottom-center { flex: 1; display: flex; justify-content: center; }
   .speaker-grille {
@@ -396,10 +381,8 @@
 <body>
 <div id="crt-outer">
 
-  <!-- ── MAIN FACE ── -->
   <div id="crt-body">
 
-    <!-- LEFT PANEL -->
     <div class="crt-side">
       <div class="side-screen">
         <div class="side-screen-content" style="justify-content:flex-start;gap:3px;padding:8px 7px">
@@ -430,7 +413,6 @@
       </div>
     </div>
 
-    <!-- CENTER — MAIN SCREEN -->
     <div id="crt-center">
       <div id="crt-screen-bezel">
         <div id="crt-screen">
@@ -447,7 +429,6 @@
       </div>
     </div>
 
-    <!-- RIGHT PANEL -->
     <div class="crt-side">
       <div class="side-screen">
         <div class="side-screen-content" style="justify-content:flex-start;gap:3px;padding:8px 7px">
@@ -483,9 +464,8 @@
       </div>
     </div>
 
-  </div><!-- end crt-body -->
+  </div>
 
-  <!-- ── BOTTOM STRIP ── -->
   <div id="crt-bottom">
     <div class="bottom-left"><div class="speaker-grille"></div></div>
     <div class="bottom-center">
@@ -502,14 +482,12 @@
     <div class="bottom-right"><div class="speaker-grille"></div></div>
   </div>
 
-</div><!-- end crt-outer -->
+</div>
 
-<!-- Background music -->
 <audio id="bg-music" loop>
   <source src="mondamusic-synthwave-retro-80s-529570.mp3" type="audio/mpeg">
 </audio>
 
-<!-- Attribution -->
 <div id="music-credit">Music by <a href="https://pixabay.com/users/mondamusic-54713575/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=529570">MondaMusic</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=529570">Pixabay</a></div>
 
 <script>
@@ -577,14 +555,14 @@ function startGame() {
   px = W / 2; py = H - 80;
   pShootCD = 0; pInv = 0; pPow = null; pPowTimer = 0;
   nextWave();
-  syncTerminal();
+  updateStats();
   state = 'play';
 }
 
 function nextWave() {
   wave++;
   waveAnnounce = 140;
-  syncTerminal();
+  updateStats();
   playWave();
 
   if (wave % 5 === 0) {
@@ -780,7 +758,7 @@ function killEnemy(i) {
   tryDropPowerup(e.x, e.y, e.isBoss);
   playExplode(e.isBoss);
   enemies.splice(i, 1);
-  syncTerminal();
+  updateStats();
 }
 
 function tryDropPowerup(x, y, isBoss) {
@@ -824,7 +802,7 @@ function hitPlayer() {
   burst(px, py, '#2266ff', 14, 3.5);
   playHit();
   if (lives <= 0) { if (score > best) best = score; state = 'over'; }
-  syncTerminal();
+  updateStats();
 }
 
 function aimShot(x, y, tx, ty, spd) {
@@ -981,7 +959,7 @@ const BTN_PAL = [1, 2, 3, 4, 5, 6, 7, 8, 0];
 let PAL = PALETTES[0];
 
 function drawEnemy(e) {
-  if (e.isBoss) { drawBossEnemy(e); return; }
+  if (e.isBoss) { drawBoss(e); return; }
   const x = e.x, y = e.y, t = e.tier;
 
   cx.fillStyle = PAL.e[0][t];
@@ -1035,7 +1013,7 @@ function drawEnemy(e) {
   }
 }
 
-function drawBossEnemy(e) {
+function drawBoss(e) {
   const x = e.x, y = e.y;
   const hpf = e.hp / e.maxHp;
   const pulse = 1 + Math.sin(frame * 0.06) * 0.025;
@@ -1260,7 +1238,7 @@ function drawBossWreck(w) {
   cx.beginPath(); cx.arc(x, y - 8 + d * 0.4, 8, 0, 6.28); cx.fill();
 }
 
-function syncTerminal() {
+function updateStats() {
   const ts = document.getElementById('term-score');
   const tb = document.getElementById('term-best');
   const tw = document.getElementById('term-wave');
