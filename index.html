@@ -501,7 +501,6 @@
         <div class="flat-btn active" id="btn-f4">TILT</div>
         <div class="flat-btn" id="btn-run">PLAY</div>
         <div class="flat-btn" id="btn-hlt">PAUS</div>
-        <div class="flat-btn" id="btn-rst">RSET</div>
       </div>
     </div>
     <div class="bottom-right"><div class="speaker-grille"></div></div>
@@ -1467,7 +1466,6 @@ function initBottomButtons() {
   const f4  = document.getElementById('btn-f4');
   const run = document.getElementById('btn-run');
   const hlt = document.getElementById('btn-hlt');
-  const rst = document.getElementById('btn-rst');
 
   // F1 — toggle scanlines
   f1?.addEventListener('click', () => {
@@ -1508,8 +1506,6 @@ function initBottomButtons() {
     syncBottomBtns();
   });
 
-  // RST — force restart at any time
-  rst?.addEventListener('click', () => { startGame(); });
 }
 
 function initButtons() {
@@ -1522,10 +1518,8 @@ function initButtons() {
       btn.classList.add('pal-active');
     });
   });
-  // Wire RESET big-btn to restart game
-  document.querySelector('.big-btn')?.addEventListener('click', () => {
-    if (state !== 'play') startGame();
-  });
+  // Wire RESET big-btn to restart game at any time
+  document.querySelector('.big-btn')?.addEventListener('click', () => { startGame(); });
 }
 
 function initKnobs() {
