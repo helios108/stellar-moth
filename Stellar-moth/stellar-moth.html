@@ -962,9 +962,11 @@ function drawShip(x, y, flicker) {
   // Body outline
   cx.strokeStyle = PAL.p[3];
   cx.lineWidth = 1.5;
+  cx.globalAlpha = 0.6;
   cx.beginPath();
   cx.moveTo(x, y - 16); cx.lineTo(x + 8, y + 3); cx.lineTo(x + 7, y + 13); cx.lineTo(x - 7, y + 13); cx.lineTo(x - 8, y + 3);
   cx.closePath(); cx.stroke();
+  cx.globalAlpha = 1;
 
   // Cockpit
   cx.fillStyle = PAL.p[4];
