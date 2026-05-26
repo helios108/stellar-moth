@@ -954,15 +954,17 @@ function drawShip(x, y, flicker) {
   cx.moveTo(x, y - 13); cx.lineTo(x + 24, y + 7); cx.lineTo(x + 13, y + 13); cx.lineTo(x + 1, y + 5);
   cx.closePath(); cx.fill();
 
-  // Wing outline
+  // Wing outline (subtle)
   cx.strokeStyle = PAL.p[3];
-  cx.lineWidth = 1;
+  cx.lineWidth = 0.8;
+  cx.globalAlpha = 0.4;
   cx.beginPath();
   cx.moveTo(x, y - 13); cx.lineTo(x - 24, y + 7); cx.lineTo(x - 13, y + 13); cx.lineTo(x - 1, y + 5);
   cx.closePath(); cx.stroke();
   cx.beginPath();
   cx.moveTo(x, y - 13); cx.lineTo(x + 24, y + 7); cx.lineTo(x + 13, y + 13); cx.lineTo(x + 1, y + 5);
   cx.closePath(); cx.stroke();
+  cx.globalAlpha = 1;
 
   // Wing accent
   cx.fillStyle = PAL.p[1];
@@ -1000,7 +1002,7 @@ function drawShip(x, y, flicker) {
 const PALETTES = [
   { p:['#3a0a6a','#6a1aaa','#8822cc','#cc44ff','#ee99ff','#ffddff'],   // 0 purple/gold
     e:[['#5a3800','#6a4400','#4a2a00'],['#ffaa00','#ffbb22','#ff9900'],'#ffdd44'],
-    b:['#2a1a44','#7a2288','#bb33cc','#ffaaee','#441060','#cc22ee','#880099','#885599'] },
+    b:['#1e1000','#886600','#cc9900','#ffdd44','#3a2000','#ffaa00','#ddaa00','#ffeeaa'] },
   { p:['#6a0f0f','#aa1a1a','#cc2222','#ff4433','#ffaaaa','#ffdddd'],   // 1 red btn: crimson/purple
     e:[['#2a0055','#380066','#1a0044'],['#aa33ff','#cc44ff','#9922ee'],'#dd00ff'],
     b:['#1a0035','#660099','#aa22ee','#dd88ff','#330055','#9922dd','#7700cc','#995588'] },

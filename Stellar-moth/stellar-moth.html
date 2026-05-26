@@ -932,15 +932,17 @@ function drawShip(x, y, flicker) {
   cx.moveTo(x, y - 13); cx.lineTo(x + 24, y + 7); cx.lineTo(x + 13, y + 13); cx.lineTo(x + 1, y + 5);
   cx.closePath(); cx.fill();
 
-  // Wing outline
+  // Wing outline (subtle)
   cx.strokeStyle = PAL.p[3];
-  cx.lineWidth = 1;
+  cx.lineWidth = 0.8;
+  cx.globalAlpha = 0.4;
   cx.beginPath();
   cx.moveTo(x, y - 13); cx.lineTo(x - 24, y + 7); cx.lineTo(x - 13, y + 13); cx.lineTo(x - 1, y + 5);
   cx.closePath(); cx.stroke();
   cx.beginPath();
   cx.moveTo(x, y - 13); cx.lineTo(x + 24, y + 7); cx.lineTo(x + 13, y + 13); cx.lineTo(x + 1, y + 5);
   cx.closePath(); cx.stroke();
+  cx.globalAlpha = 1;
 
   // Wing accent
   cx.fillStyle = PAL.p[1];
