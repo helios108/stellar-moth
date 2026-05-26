@@ -1131,12 +1131,6 @@ function drawBossEnemy(e) {
   cx.strokeStyle = PAL.b[6];
   cx.lineWidth = 1;
   cx.strokeRect(x - bw / 2, y + 50, bw, 8);
-
-  // Boss label above HP
-  cx.fillStyle = PAL.b[7];
-  cx.font = '10px "Courier New", monospace';
-  cx.textAlign = 'center';
-  cx.fillText('VOID LORD', x, y + 47);
 }
 
 function drawPowerups() {
@@ -1255,7 +1249,7 @@ function drawHUD() {
     cx.fillStyle = wave % 5 === 0 ? '#ff2244' : '#44aaff';
     cx.font = 'bold 22px "Courier New", monospace';
     cx.textAlign = 'center';
-    cx.fillText(wave % 5 === 0 ? '⚠ VOID LORD ⚠' : 'WAVE  ' + String(wave).padStart(2, '0'), W / 2, H / 2 + 8);
+    cx.fillText(wave % 5 === 0 ? '⚠ BOSS ⚠' : 'WAVE  ' + String(wave).padStart(2, '0'), W / 2, H / 2 + 8);
     cx.globalAlpha = 1;
   }
 }
