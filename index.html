@@ -954,6 +954,16 @@ function drawShip(x, y, flicker) {
   cx.moveTo(x, y - 13); cx.lineTo(x + 24, y + 7); cx.lineTo(x + 13, y + 13); cx.lineTo(x + 1, y + 5);
   cx.closePath(); cx.fill();
 
+  // Wing outline
+  cx.strokeStyle = PAL.p[3];
+  cx.lineWidth = 1;
+  cx.beginPath();
+  cx.moveTo(x, y - 13); cx.lineTo(x - 24, y + 7); cx.lineTo(x - 13, y + 13); cx.lineTo(x - 1, y + 5);
+  cx.closePath(); cx.stroke();
+  cx.beginPath();
+  cx.moveTo(x, y - 13); cx.lineTo(x + 24, y + 7); cx.lineTo(x + 13, y + 13); cx.lineTo(x + 1, y + 5);
+  cx.closePath(); cx.stroke();
+
   // Wing accent
   cx.fillStyle = PAL.p[1];
   cx.beginPath();
@@ -1012,7 +1022,7 @@ const PALETTES = [
   { p:['#0a1e44','#122a66','#1a3a99','#3366cc','#6699ff','#aaccff'],   // 7 grey: navy/copper
     e:[['#5a2a00','#6a3500','#4a2000'],['#cc7700','#dd8800','#bb6600'],'#ff9900'],
     b:['#2a1000','#884400','#cc7700','#ffcc88','#5a2200','#ff8800','#aa5500','#775533'] },
-  { p:['#0a0a14','#141420','#1a1a33','#2a2a66','#5555ff','#aaaaff'],   // 8 grey: void/neon
+  { p:['#0d1530','#007733','#141830','#00ff55','#22ff88','#99ffcc'],   // 8 void/neon
     e:[['#003300','#004400','#002200'],['#00ff44','#00ff66','#00dd33'],'#00ff00'],
     b:['#001a00','#005500','#00cc44','#66ffaa','#002200','#00dd44','#009933','#336644'] },
 ];
