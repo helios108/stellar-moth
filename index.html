@@ -601,6 +601,18 @@ function startGame() {
   syncBottomBtns();
 }
 
+function returnToMenu() {
+  score = 0; lives = 3; wave = 0; frame = 0;
+  waveDelay = 0; waveAnnounce = 0;
+  shots = []; eshots = []; enemies = []; sparks = []; powerups = []; bossExplosions = []; screenFlash = 0;
+  px = W / 2; py = H - 80;
+  pShootCD = 0; pInv = 0; pPow = null; pPowTimer = 0;
+  paused = false;
+  syncTerminal();
+  state = 'menu';
+  syncBottomBtns();
+}
+
 // ── WAVE SYSTEM ──────────────────────────────────────────────────────────────
 function nextWave() {
   wave++;
@@ -1518,8 +1530,8 @@ function initButtons() {
       btn.classList.add('pal-active');
     });
   });
-  // Wire RESET big-btn to restart game at any time
-  document.querySelector('.big-btn')?.addEventListener('click', () => { startGame(); });
+  // Wire RESET big-btn to return to title screen (preserves high score)
+  document.querySelector('.big-btn')?.addEventListener('click', () => { returnToMenu(); });
 }
 
 function initKnobs() {
