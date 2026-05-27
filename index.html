@@ -507,14 +507,15 @@ function startBgMusic() {
   bgMusic.play().catch(() => {});
 }
 
-const _autoplay = bgMusic.play();
-if (_autoplay !== undefined) {
-  _autoplay.catch(() => {
-    const unlock = () => { startBgMusic(); document.removeEventListener('keydown', unlock); document.removeEventListener('click', unlock); };
-    document.addEventListener('keydown', unlock, { once: true });
-    document.addEventListener('click', unlock, { once: true });
-  });
-}
+bgMusic.play().catch(() => {
+  const unlock = () => {
+    startBgMusic();
+    document.removeEventListener('keydown', unlock);
+    document.removeEventListener('click', unlock);
+  };
+  document.addEventListener('keydown', unlock, { once: true });
+  document.addEventListener('click', unlock, { once: true });
+});
 
 const KEY = {};
 window.addEventListener('keydown', e => {
@@ -545,26 +546,32 @@ let bossExplosions = [];
 let screenFlash = 0;
 
 const PUPS = {
-  rapid:  { color: '#00eeff', label: 'R', name: 'RAPID FIRE',  dur: 500 },
+  rapid:  { color: '#00eeff', label: 'R', name: 'RAPID FIRE', dur: 500 },
   triple: { color: '#ffdd00', label: 'T', name: 'TRIPLE SHOT', dur: 450 },
-  life:   { color: '#ff55ff', label: '+', name: '+1 LIFE',     dur: 0   },
+  life:   { color: '#ff55ff', label: '+', name: '+1 LIFE', dur: 0 },
 };
 
-const STARS = Array.from({ length: 95 }, () => ({
+const STARS = [];
+for (let i = 0; i < 95; i++) STARS.push({
   x: Math.random() * W,
   y: Math.random() * H,
   r: Math.random() * 1.4 + 0.3,
   spd: Math.random() * 0.5 + 0.08,
-  a: Math.random() * 0.5 + 0.15
-}));
+  a: Math.random() * 0.5 + 0.15,
+});
 
-function startGame() {
+function resetGameState() {
   score = 0; lives = 3; wave = 0; frame = 0;
   waveDelay = 0; waveAnnounce = 0;
-  shots = []; eshots = []; enemies = []; sparks = []; powerups = []; bossExplosions = []; screenFlash = 0;
+  shots = []; eshots = []; enemies = []; sparks = [];
+  powerups = []; bossExplosions = []; screenFlash = 0;
   px = W / 2; py = H - 80;
   pShootCD = 0; pInv = 0; pPow = null; pPowTimer = 0;
   paused = false;
+}
+
+function startGame() {
+  resetGameState();
   nextWave();
   updateStats();
   state = 'play';
@@ -572,12 +579,7 @@ function startGame() {
 }
 
 function returnToMenu() {
-  score = 0; lives = 3; wave = 0; frame = 0;
-  waveDelay = 0; waveAnnounce = 0;
-  shots = []; eshots = []; enemies = []; sparks = []; powerups = []; bossExplosions = []; screenFlash = 0;
-  px = W / 2; py = H - 80;
-  pShootCD = 0; pInv = 0; pPow = null; pPowTimer = 0;
-  paused = false;
+  resetGameState();
   updateStats();
   state = 'menu';
   refreshControls();
@@ -760,11 +762,9 @@ function tickBoss(e, i) {
   if (hpf < phase2HP && e.bphase === 1) e.bphase = 2;
 
   e.st--;
-  const rate = e.bphase === 2
-    ? Math.max(18, 38 - (e.tier - 1) * 5)
-    : e.bphase === 1
-      ? Math.max(28, 56 - (e.tier - 1) * 8)
-      : Math.max(44, 80 - (e.tier - 1) * 12);
+  let rate = Math.max(44, 80 - (e.tier - 1) * 12);
+  if (e.bphase === 1) rate = Math.max(28, 56 - (e.tier - 1) * 8);
+  if (e.bphase === 2) rate = Math.max(18, 38 - (e.tier - 1) * 5);
   if (e.st <= 0) {
     e.st = rate;
     const shotSpd   = 2.8 + (e.tier - 1) * 0.45;
@@ -1359,15 +1359,15 @@ function noise(dur, vol, cutoff) {
   src.start(); src.stop(audioCtx.currentTime + dur);
 }
 
-function playShoot()      { tone(660, 330, 0.07, 0.18, 'square'); }
+function playShoot() { tone(660, 330, 0.07, 0.18, 'square'); }
 function playExplode(big) { noise(big ? 0.55 : 0.18, big ? 0.65 : 0.3, big ? 280 : 750); if (big) tone(70, 35, 0.5, 0.4, 'sine'); }
-function playHit()        { tone(160, 55, 0.28, 0.3, 'sawtooth'); noise(0.12, 0.25, 600); }
-function playPowerup()    { tone(440, 880, 0.12, 0.18, 'sine'); setTimeout(() => tone(880, 1760, 0.1, 0.12, 'sine'), 100); }
-function playWave()       { if (audioCtx) tone(330, 660, 0.25, 0.12, 'sine'); }
+function playHit() { tone(160, 55, 0.28, 0.3, 'sawtooth'); noise(0.12, 0.25, 600); }
+function playPowerup() { tone(440, 880, 0.12, 0.18, 'sine'); setTimeout(() => tone(880, 1760, 0.1, 0.12, 'sine'), 100); }
+function playWave() { if (audioCtx) tone(330, 660, 0.25, 0.12, 'sine'); }
 
 const KNOB = {
-  vol: { angle: 45,  tickEl: null },
-  brt: { angle: 80,  tickEl: null }
+  vol: { angle: 45, tickEl: null },
+  brt: { angle: 80, tickEl: null }
 };
 let dragKnob = null, dragY0 = 0, dragA0 = 0;
 
@@ -1386,15 +1386,16 @@ function applyKnob(name) {
 }
 
 function refreshControls() {
-  document.getElementById('btn-run')?.classList.toggle('active', !paused && state === 'play');
-  document.getElementById('btn-hlt')?.classList.toggle('active', paused && state === 'play');
+  const playing = state === 'play';
+  document.getElementById('btn-run')?.classList.toggle('active', playing && !paused);
+  document.getElementById('btn-hlt')?.classList.toggle('active', playing && paused);
 }
 
 function initBottomButtons() {
-  const f1  = document.getElementById('btn-f1');
-  const f2  = document.getElementById('btn-f2');
-  const f3  = document.getElementById('btn-f3');
-  const f4  = document.getElementById('btn-f4');
+  const f1 = document.getElementById('btn-f1');
+  const f2 = document.getElementById('btn-f2');
+  const f3 = document.getElementById('btn-f3');
+  const f4 = document.getElementById('btn-f4');
   const run = document.getElementById('btn-run');
   const hlt = document.getElementById('btn-hlt');
 
