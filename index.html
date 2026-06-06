@@ -1401,8 +1401,8 @@ function initBottomButtons() {
 
   f1?.addEventListener('click', () => {
     const on = f1.classList.toggle('active');
-    document.getElementById('crt-scanlines').style.display = on ? '' : 'none';
-    document.querySelectorAll('.side-scanlines').forEach(el => el.style.display = on ? '' : 'none');
+    document.getElementById('crt-scanlines').style.display = on ? 'block' : 'none';
+    document.querySelectorAll('.side-scanlines').forEach(el => el.style.display = on ? 'block' : 'none');
   });
 
   f2?.addEventListener('click', () => {
@@ -1418,7 +1418,7 @@ function initBottomButtons() {
 
   f4?.addEventListener('click', () => {
     const on = f4.classList.toggle('active');
-    document.getElementById('crt-outer').style.transform = on ? '' : 'none';
+    document.getElementById('crt-outer').style.transform = on ? '' : 'perspective(1100px) rotateX(0deg)';
   });
 
   run?.addEventListener('click', () => {
